@@ -31,12 +31,12 @@ contract NFT is ERC721, ERC721URIStorage  {
         uint256 newId = _tokenIds.current();
         _safeMint(_recipient, newId);
         _setTokenURI(newId, _uri);
-        tokenMinters[newId] = msg.sender;
-        canBeListed[newId] = true;
+        tokenMinters[newId] = msg.sender; // adding the minter to the list
+        canBeListed[newId] = true; // Making the NFT available for listing
         _tokenIds.increment();
-        
         emit Minted(_uri);
         return newId;
+
     }
 
     // list an item in the market for sale
@@ -47,12 +47,12 @@ contract NFT is ERC721, ERC721URIStorage  {
         require(_exists(_id), "This asset has not been minted yet.");
         require(canBeListed[_id], "The asset has been listed for sale once already.");
         tokenListPrices[_id] = _price;
-        listed[_id] = true;
-
+        listed[_id] = true; 
         approve(address(this), _id);
     }
 
-    // get price of a market item
+
+    // get price of a market item(returns price of listed item)
     function getListItemPrice(uint _tokenId)
         public
         view
@@ -64,7 +64,7 @@ contract NFT is ERC721, ERC721URIStorage  {
         return price;
     }
 
-    // buy a listed item with id _tokenId
+    // buy a listed item with id _tokenId (buy item that is listed for sale)
     function buyListedItem(uint256 _tokenId)
         public
         payable
@@ -77,14 +77,13 @@ contract NFT is ERC721, ERC721URIStorage  {
         _transfer(tokenMinters[_tokenId], msg.sender, _tokenId);
         listed[_tokenId] = false;
         canBeListed[_tokenId] = false;
-        forTrade[_tokenId] = true;
-        
+        forTrade[_tokenId] = true;     // setting the item to be tradable   
         emit TokenSold(_tokenId);
     }
     
-    //TRADING FUNCTIONS
+    //TRADING FUNCTIONS- this is the trading section. all functions here can only execute if the item is tradable(forTrade == true)
 
-    // sell a market item
+    // sell a market item(sell item that is tradable)
     function sellItem(uint _tokenId, uint _price)
         public
     {
@@ -92,10 +91,10 @@ contract NFT is ERC721, ERC721URIStorage  {
         require(_exists(_tokenId), "This asset has not been minted yet.");
         require(ownerOf(_tokenId) == msg.sender, "You are not the owner of this asset");
         tokenTradePrices[_tokenId] = _price;
-        approve(address(this), _tokenId);
+        approve(address(this), _tokenId);// approve transfer
     }
 
-    // get price of an item
+    // get price of an item (get tradable item price)
     function getItemPrice(uint _tokenId)
         public
         view
@@ -107,8 +106,8 @@ contract NFT is ERC721, ERC721URIStorage  {
         return price;
     }
 
-    // buy a market item
-    function buyItem(uint _tokenId)
+    // buy a market item that is tradable.
+    function buyforTradeItem(uint _tokenId)
         public
         payable
     {
